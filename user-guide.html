@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>User Guide – Interactive Bloch Sphere Visualizer</title>
+
+<style>
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    margin: 0;
+    padding: 24px;
+    background: #ffffff;
+    color: #222;
+    line-height: 1.6;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 28px;
+    margin-bottom: 6px;
+  }
+
+  h2 {
+    margin-top: 28px;
+    color: #2c3e50;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 4px;
+  }
+
+  p {
+    margin: 10px 0;
+  }
+
+  ul {
+    margin-left: 20px;
+  }
+
+  .note {
+    background: #f5f7fa;
+    border-left: 4px solid #4a90e2;
+    padding: 10px 14px;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+
+  footer {
+    margin-top: 40px;
+    font-size: 13px;
+    color: #555;
+    text-align: center;
+    border-top: 1px solid #ddd;
+    padding-top: 12px;
+  }
+
+  a {
+    color: #1a73e8;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+</style>
+</head>
+
+<body>
+
+<h1>Interactive Bloch Sphere Visualizer</h1>
+<p style="text-align:center; color:#555;">
+User Guide for learners, educators, and researchers
+</p>
+
+<h2>1. Introduction</h2>
+<p>
+The Interactive Bloch Sphere Visualizer is designed to help learners,
+educators, and researchers understand single-qubit quantum states using
+a geometric Bloch sphere representation.
+</p>
+
+<h2>2. Bloch Sphere Basics</h2>
+<ul>
+  <li>+Z axis → |0⟩</li>
+  <li>−Z axis → |1⟩</li>
+  <li>+X / −X → |+⟩ / |−⟩</li>
+  <li>+Y / −Y → |+i⟩ / |−i⟩</li>
+</ul>
+
+<h2>3. Mouse Interaction</h2>
+<p>
+Click and drag the Bloch sphere to rotate the view.
+This changes only the visualization, not the quantum state.
+</p>
+
+<div class="note">
+Rotating the sphere with the mouse does NOT change θ or φ.
+</div>
+
+<h2>4. Polar and Azimuthal Angle Sliders</h2>
+<p>
+The sliders control the qubit state according to:
+</p>
+<p style="font-family:'Times New Roman', serif;">
+|ψ⟩ = cos(θ/2)|0⟩ + e<sup>iφ</sup> sin(θ/2)|1⟩
+</p>
+
+<h2>5. State Information Panels</h2>
+<ul>
+  <li>Angles (θ, φ)</li>
+  <li>Qubit state equation</li>
+  <li>Bloch vector coordinates</li>
+  <li>Measurement probabilities</li>
+</ul>
+
+<h2>6. Quantum Gates</h2>
+<ul>
+  <li>I, X, Y, Z</li>
+  <li>Hadamard (H)</li>
+  <li>Phase gates: S, S†, T, T†</li>
+</ul>
+
+<p>
+Gate actions are animated, and the trajectory of the state is traced
+on the Bloch sphere.
+</p>
+
+<h2>7. Rotation Gates</h2>
+<p>
+Apply continuous rotations using Rx, Ry, and Rz with a chosen angle.
+</p>
+
+<h2>8. Controls</h2>
+<ul>
+  <li>Reset – return to |0⟩</li>
+  <li>Undo – revert last operation</li>
+  <li>Redo – reapply operation</li>
+</ul>
+
+<h2>9. Learning Tips</h2>
+<ul>
+  <li>Compare H and Ry(90°)</li>
+  <li>Apply Z after X and observe phase</li>
+  <li>Study trajectories for gate sequences</li>
+</ul>
+
+<footer>
+© 2026 · Prof. G. Rajarajan, Department of Quantum AI, Vellore Institute of Technology, Vellore.<br>
+For feedback and suggestions:
+<a href="mailto:rajarajan.g@vit.ac.in">rajarajan.g@vit.ac.in</a>
+</footer>
+
+</body>
+</html>

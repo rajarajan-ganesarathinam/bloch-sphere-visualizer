@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bloch Sphere 3D – Stable & Correct</title>
+<style>
+  #page-header {
+  text-align: center;
+  padding: 16px 12px 8px;
+  font-family: "Segoe UI", Arial, sans-serif;
+  flex: 0 0 auto;
+}
+
+#page-header h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+}
+
+#page-header .subtitle {
+  margin: 6px 0 10px;
+  font-size: 14px;
+  color: #555;
+}
+
+#page-header hr {
+  width: 70%;
+  border: none;
+  border-top: 1px solid #ddd;
+  margin: 10px auto 0;
+}
+
+#page-footer {
+  position: fixed;
+  bottom: 8px;
+  width: 100%;
+  text-align: center;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 12px;
+  color: #666;
+  flex: 0 0 auto;
+}
+
+#page-footer a {
+  color: #555;
+  text-decoration: none;
+}
+
+#page-footer a:hover {
+  text-decoration: underline;
+}
+#canvas-container {
+  flex: 1 1 auto;              /* takes remaining vertical space */
+  position: relative;
+
+  display: flex;
+  justify-content: center;     /* horizontal centering */
+  align-items: center;         /* vertical centering */
+}
+#guide-link {
+  margin-left: 24px;
+  margin-bottom: 6px;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+#guide-link a {
+  font-size: 14px;
+  color: #1a73e8;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+#guide-link a:hover {
+  text-decoration: underline;
+}
+
+
+
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: white;
+
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+  .panel {
+    position: fixed;
+    right: 12px;
+    background: rgba(255,255,255,0.92);
+    padding: 10px 14px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    font-size: 14px;
+    width: 220px;
+  }
+  #angles { top: 12px; }
+  #controls { top: 110px; }
+  input[type="range"] { width: 100%; }
+
+</style>
+</head>
+<body>
+  <header id="page-header">
+  <h1>Interactive Bloch Sphere Visualizer</h1>
+  <p class="subtitle">
+    Visualizing qubit states, quantum gates, and unitary evolution
+  </p>
+  <hr>
+</header>
+
+<div id="guide-link">
+  <a href="user-guide.html" target="_blank">📘 User Guide</a>
+  <a href="about.html" target="_blank">ℹ️ About / Cite this tool</a>
+
+</div>
+
+<div id="canvas-container"></div>
+
+<footer id="page-footer">
+  <p>
+    © 2026 · Prof. G. Rajarajan, Department of Quantum AI, Vellore Institute of Technology, Vellore. <br>
+    Interactive Bloch Sphere Visualizer for teaching and research.
+    <span class="contact">
+      For feedback and suggestions: 
+      <a href="mailto:rajarajan.g@vit.ac.in">rajarajan.g@vit.ac.in</a>
+    </span>
+  </p>
+</footer>
+
+
+
+<div id="angles" class="panel" >
+  <div><b>Polar angle (θ):</b> <span id="theta">0</span>°</div>
+  <div style="margin-top:6px;"><b>Azimuthal angle (φ):</b> <span id="phi">0</span>°</div>
+</div>
+
+<div id="equation" class="panel" style="top: 260px;">
+  <div style="font-weight:bold; margin-bottom:8px;">Qubit state</div>
+  <div id="psiEq"
+       style="font-family:'Times New Roman', serif; line-height:1.4;">
+    |ψ⟩ = |0⟩
+  </div>
+</div>
+
+<div id="coordinates" class="panel" style="top: 350px;">
+  <div style="font-weight:bold; margin-bottom:6px;">
+    Bloch vector (pure state)
+  </div>
+  <div id="blochCoords">
+    (x, y, z) = (0.000, 0.000, 1.000)
+  </div>
+</div>
+
+<div id="probabilities" class="panel" style="top: 430px;">
+  <div style="font-weight:bold; margin-bottom:6px;">
+    Measurement probabilities
+  </div>
+  <div id="probText">
+    P(0) = 1.000<br>
+    P(1) = 0.000
+  </div>
+</div>
+
+<div id="gates" class="panel" style="top: 510px;">
+  <div style="font-weight:bold; margin-bottom:8px;">
+    Quantum Gates
+  </div>
+
+  
+
+  <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
+  <button onclick="applyI()">I</button>
+  <button onclick="applyX()">X</button>
+  <button onclick="applyY()">Y</button>
+  <button onclick="applyZ()">Z</button>
+  <button onclick="applyH()">H</button>
+  <button onclick="applyS()">S</button>
+  <button onclick="applySdg()">S†</button>
+  <button onclick="applyT()">T</button>
+  <button onclick="applyTdg()">T†</button>
+</div>
+
+
+  <div style="margin-top:6px;">
+    <b>Rotation angle (°)</b>
+    <input type="number" id="rotAngle" value="90" style="width:100%; margin-top:4px;">
+  </div>
+
+  <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+    <button onclick="applyRx()">Rx</button>
+    <button onclick="applyRy()">Ry</button>
+    <button onclick="applyRz()">Rz</button>
+  </div>
+  <div class="panel" style="top: 710px;">
+  <div style="font-weight:bold; margin-bottom:8px;">Controls</div>
+  <div style="display:flex; gap:6px;">
+    <button onclick="resetState()">Reset</button>
+    <button onclick="undoState()">Undo</button>
+    <button onclick="redoState()">Redo</button>
+  </div>
+</div>
+
+</div>
+
+
+
+
+
+
+<div id="controls" class="panel">
+  <div>
+    <b>θ (Polar)</b>
+    <input type="range" id="thetaSlider" min="0" max="180" value="0">
+    <div style="text-align:right;"><span id="thetaVal">0</span>°</div>
+  </div>
+  <div style="margin-top:10px;">
+    <b>φ (Azimuthal)</b>
+    <input type="range" id="phiSlider" min="0" max="360" value="0">
+    <div style="text-align:right;"><span id="phiVal">0</span>°</div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/three@0.152.2/build/three.min.js"></script>
+<script>
+
+/* ================= Scene ================= */
+// === Sphere scale (single source of truth) ===
+const R = 1.25; // change this to increase/decrease sphere size (e.g. 1.0, 1.2, 1.5)
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xffffff);
+
+const camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 1000);
+
+// OLD: camera.position.z = 3;
+camera.position.z = 3 * R; // scale camera distance with sphere size
+
+
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+const container = document.getElementById("canvas-container");
+renderer.setSize(container.clientWidth, container.clientHeight);
+
+
+document.getElementById("canvas-container")
+  .appendChild(renderer.domElement);
+
+
+/* ================= Bloch Sphere ================= */
+scene.add(new THREE.Mesh(
+  new THREE.SphereGeometry(R, 64, 64),
+  new THREE.MeshBasicMaterial({ color: 0x88aaff, transparent: true, opacity: 0.12 })
+));
+
+/* ================= Latitude circles ================= */
+function latitude(thetaDeg){
+  const t = thetaDeg*Math.PI/180;
+  const r = Math.sin(t), z = Math.cos(t);
+  const pts=[], seg=180;
+  for(let i=0;i<=seg;i++){
+    const a=i/seg*2*Math.PI;
+    pts.push(new THREE.Vector3(R * r*Math.cos(a), R * r*Math.sin(a), R * z));
+  }
+  scene.add(new THREE.LineLoop(
+    new THREE.BufferGeometry().setFromPoints(pts),
+    new THREE.LineBasicMaterial({ color:0xbbbbbb })
+  ));
+}
+
+[30,60,90,120,150].forEach(latitude);
+
+/* ================= Longitude circles ================= */
+function longitude(phiDeg){
+  const p=phiDeg*Math.PI/180, pts=[], seg=180;
+  for(let i=0;i<=seg;i++){
+    const t=i/seg*Math.PI;
+    pts.push(new THREE.Vector3(
+      R * Math.sin(t)*Math.cos(p),
+      R * Math.sin(t)*Math.sin(p),
+      R * Math.cos(t)
+    ));
+  }
+  scene.add(new THREE.LineLoop(
+    new THREE.BufferGeometry().setFromPoints(pts),
+    new THREE.LineBasicMaterial({ color:0xcccccc })
+  ));
+}
+
+for(let p=0;p<360;p+=30) longitude(p);
+
+/* ================= Axes ================= */
+// axis function remains
+function axis(v,c){
+  scene.add(new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints([ v.clone().negate().multiplyScalar(R), v.clone().multiplyScalar(R) ]),
+    new THREE.LineBasicMaterial({ color:c })
+  ));
+}
+
+// Calls (same as before)
+axis(new THREE.Vector3(1,0,0),0xff0000);
+axis(new THREE.Vector3(0,1,0),0x00aa00);
+axis(new THREE.Vector3(0,0,1),0x0000ff);
+
+
+/* ================= Labels ================= */
+function label(txt,pos){
+  const c=document.createElement("canvas");
+  c.width=256;c.height=128;
+  const ctx=c.getContext("2d");
+  ctx.font="32px Arial"; ctx.fillStyle="black";
+  ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.fillText(txt,128,64);
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({ map:new THREE.CanvasTexture(c) }));
+  s.scale.set(0.6,0.3,1);
+  s.position.copy(pos);
+  scene.add(s);
+}
+label("X", new THREE.Vector3( 1.08 * R, 0, 0));
+label("-X",new THREE.Vector3(-1.15 * R, 0, 0));
+label("Y", new THREE.Vector3(0,  1.08 * R, 0));
+label("-Y",new THREE.Vector3(0, -1.15 * R, 0));
+label("Z", new THREE.Vector3(0, 0,  1.08 * R));
+label("-Z",new THREE.Vector3(0, 0, -1.15 * R));
+
+label("|0⟩", new THREE.Vector3(0, 0, 1.22 * R));
+label("|1⟩", new THREE.Vector3(0, 0, -1.28 * R));
+label("|+⟩", new THREE.Vector3(1.22 * R, 0, 0));
+label("|−⟩", new THREE.Vector3(-1.30 * R, 0, 0));
+label("|+i⟩",new THREE.Vector3(0, 1.22 * R, 0));
+label("|−i⟩",new THREE.Vector3(0,-1.30 * R, 0));
+
+
+/* ================= Bloch State ================= */
+let blochVector=new THREE.Vector3(0,0,1);
+
+// ================= Animation State =================
+let animating = false;
+let animAxis = new THREE.Vector3();
+let animRemaining = 0;
+const ANIM_STEP = Math.PI / 90; // smoothness (smaller = smoother)
+// ================= Trajectory Trace =================
+let trajectoryPoints = [];
+let trajectoryLine = null;
+// ================= State History =================
+let undoStack = [];
+let redoStack = [];
+
+
+
+function animateRotation(axis, totalAngle) {
+  if (animating) return;
+
+  
+
+  animAxis.copy(axis).normalize();
+  animRemaining = totalAngle;
+  animating = true;
+}
+
+
+// ================= Trajectory Reset =================
+function resetTrajectory() {
+  trajectoryPoints = [];
+
+  if (trajectoryLine) {
+    scene.remove(trajectoryLine);
+    trajectoryLine.geometry.dispose();
+    trajectoryLine.material.dispose();
+    trajectoryLine = null;
+  }
+}
+function saveState() {
+  undoStack.push(blochVector.clone());
+  redoStack = []; // clear redo on new action
+}
+
+
+
+/* ================= State Vector Arrow ================= */
+/* ================= State Vector Arrow ================= */
+const stateVector = new THREE.Group();
+
+// ---- scale factors based on sphere radius R ----
+const shaftLength = 0.85 * R;
+const shaftRadius = 0.035 * R;
+const headHeight  = 0.16 * R;
+const headRadius  = 0.08 * R;
+
+// shaft (geometry baked to +Z)
+const sg = new THREE.CylinderGeometry(
+  shaftRadius,
+  shaftRadius,
+  shaftLength,
+  32
+);
+sg.rotateX(Math.PI / 2);
+
+const shaft = new THREE.Mesh(
+  sg,
+  new THREE.MeshBasicMaterial({ color: 0xff5722 })
+);
+shaft.position.z = shaftLength / 2;
+stateVector.add(shaft);
+
+// head
+const hg = new THREE.ConeGeometry(
+  headRadius,
+  headHeight,
+  32
+);
+hg.rotateX(Math.PI / 2);
+
+const head = new THREE.Mesh(
+  hg,
+  new THREE.MeshBasicMaterial({ color: 0xff5722 })
+);
+head.position.z = shaftLength + headHeight / 2;
+stateVector.add(head);
+
+// add arrow to scene
+scene.add(stateVector);
+
+
+/* ================= Update Functions ================= */
+function updateStateVectorVisual(){
+  const q=new THREE.Quaternion().setFromUnitVectors(
+    new THREE.Vector3(0,0,1),
+    blochVector.clone().normalize()
+  );
+  stateVector.quaternion.copy(q);
+}
+
+function updateAngles() {
+  const x = blochVector.x;
+  const y = blochVector.y;
+  const z = blochVector.z;
+
+  const eps = 1e-6;
+
+  let theta = Math.acos(Math.min(1, Math.max(-1, z)));
+  let phi = 0;
+
+  // φ is only meaningful away from the poles
+  if (Math.abs(Math.sin(theta)) > eps) {
+    phi = Math.atan2(y, x);
+    if (phi < 0) phi += 2 * Math.PI;
+  }
+
+  theta = theta * 180 / Math.PI;
+  phi = phi * 180 / Math.PI;
+
+  document.getElementById("theta").textContent = theta.toFixed(2);
+  document.getElementById("phi").textContent = phi.toFixed(2);
+}
+
+
+function updateQubitEquation() {
+  const x = blochVector.x;
+  const y = blochVector.y;
+  const z = blochVector.z;
+
+  const eps = 1e-6;
+
+// North pole → |0⟩
+if (blochVector.z > 1 - eps) {
+  document.getElementById("psiEq").innerHTML = "|ψ⟩ = |0⟩";
+  return;
+}
+
+// South pole → |1⟩
+if (blochVector.z < -1 + eps) {
+  document.getElementById("psiEq").innerHTML = "|ψ⟩ = |1⟩";
+  return;
+}
+
+
+  // Compute θ and φ
+  const theta = Math.acos(Math.min(1, Math.max(-1, z)));
+  let phi = Math.atan2(y, x);
+  if (theta < 1e-6) phi = 0;
+  if (phi < 0) phi += 2 * Math.PI;
+
+  // Coefficients
+  const a0 = Math.cos(theta / 2);
+  const a1 = Math.sin(theta / 2);
+
+  // Complex phase components
+  const re = Math.cos(phi);
+  const im = Math.sin(phi);
+
+  // Formatting helpers
+  const f = v => Math.abs(v) < 1e-3 ? "0" : v.toFixed(3);
+
+  let eq = `|ψ⟩ = ${f(a0)}|0⟩`;
+
+  if (a1 > 1e-6) {
+    if (Math.abs(im) < 1e-3) {
+      // purely real
+      eq += ` + ${f(a1 * re)}|1⟩`;
+    } else if (Math.abs(re) < 1e-3) {
+      // purely imaginary
+      eq += ` + ${f(a1 * im)}i|1⟩`;
+    } else {
+      // full complex
+      const sign = im >= 0 ? "+" : "−";
+      eq += ` + (${f(a1 * re)} ${sign} ${f(Math.abs(a1 * im))}i)|1⟩`;
+    }
+  }
+
+  document.getElementById("psiEq").innerHTML = eq;
+}
+
+function updateBlochCoordinates() {
+  const x = blochVector.x;
+  const y = blochVector.y;
+  const z = blochVector.z;
+
+  const f = v => Math.abs(v) < 1e-4 ? "0.000" : v.toFixed(3);
+
+  document.getElementById("blochCoords").innerHTML =
+    `(x, y, z) = (${f(x)}, ${f(y)}, ${f(z)})`;
+}
+
+function updateMeasurementProbabilities() {
+  // z = cos(theta)
+  const z = blochVector.z;
+
+  // theta/2 probabilities
+  const p0 = (1 + z) / 2;   // cos^2(theta/2)
+  const p1 = (1 - z) / 2;   // sin^2(theta/2)
+
+  const f = v => v.toFixed(3);
+
+  document.getElementById("probText").innerHTML =
+    `P(0) = ${f(p0)}<br>P(1) = ${f(p1)}`;
+}
+
+// ================= Quantum Gates =================
+
+// Identity gate (do nothing)
+function applyI() {
+  // No change to blochVector
+  updateStateVectorVisual();
+}
+
+function applyX() {
+  saveState();
+  resetTrajectory();
+  animateRotation(new THREE.Vector3(1,0,0), Math.PI);
+}
+
+function applyY() {
+  saveState();
+  resetTrajectory();
+  animateRotation(new THREE.Vector3(0,1,0), Math.PI);
+}
+
+function applyZ() {
+  saveState();
+  resetTrajectory();
+  animateRotation(new THREE.Vector3(0,0,1), Math.PI);
+}
+
+// Hadamard gate
+function applyH() {
+  saveState();
+  resetTrajectory();
+  animateRotation(new THREE.Vector3(1,0,1).normalize(), Math.PI);
+}
+
+
+
+// ================= Phase Gates =================
+
+function applyS()   { saveState(); resetTrajectory(); animateRotation(new THREE.Vector3(0,0,1),  Math.PI/2); }
+function applySdg(){ saveState(); resetTrajectory(); animateRotation(new THREE.Vector3(0,0,1), -Math.PI/2); }
+function applyT()  { saveState(); resetTrajectory(); animateRotation(new THREE.Vector3(0,0,1),  Math.PI/4); }
+function applyTdg(){ saveState(); resetTrajectory(); animateRotation(new THREE.Vector3(0,0,1), -Math.PI/4); }
+
+
+
+// ================= Parametric Rotation Gates =================
+
+function getRotationAngleRad() {
+  const deg = parseFloat(document.getElementById("rotAngle").value);
+  return deg * Math.PI / 180;
+}
+
+function applyRx() {
+  saveState();
+  resetTrajectory();
+  animateRotation(new THREE.Vector3(1,0,0), getRotationAngleRad());
+}
+function applyRy() {
+  saveState();
+  resetTrajectory();
+  animateRotation(new THREE.Vector3(0,1,0), getRotationAngleRad());
+}
+function applyRz() {
+  saveState();
+  resetTrajectory();
+  animateRotation(new THREE.Vector3(0,0,1), getRotationAngleRad());
+}
+
+
+function resetState() {
+  animating = false;
+  resetTrajectory();
+
+  blochVector.set(0, 0, 1);
+  updateStateVectorVisual();
+
+  undoStack = [];
+  redoStack = [];
+}
+function undoState() {
+  if (animating || undoStack.length === 0) return;
+
+  const prev = undoStack.pop();
+  redoStack.push(blochVector.clone()); // save current to redo
+  animateToState(prev);
+}
+
+function redoState() {
+  if (animating || redoStack.length === 0) return;
+
+  const next = redoStack.pop();
+  undoStack.push(blochVector.clone()); // save current to undo
+  animateToState(next);
+}
+
+function animateToState(targetVec) {
+  resetTrajectory();
+
+  const current = blochVector.clone().normalize();
+  const target = targetVec.clone().normalize();
+
+  // Compute rotation axis and angle
+  const axis = new THREE.Vector3().crossVectors(current, target);
+  const dot = current.dot(target);
+
+  // If vectors are parallel or anti-parallel
+  if (axis.length() < 1e-6) {
+    if (dot > 0) return; // same state, nothing to animate
+    // 180° rotation: pick arbitrary perpendicular axis (e.g., X)
+    axis.set(1, 0, 0);
+  }
+
+  const angle = Math.acos(Math.min(1, Math.max(-1, dot)));
+  // IMPORTANT: do NOT save state here — undo/redo logic already managed stacks
+  animateRotation(axis.normalize(), angle);
+}
+
+
+
+
+
+/* ================= Sliders ================= */
+const thetaSlider=document.getElementById("thetaSlider");
+const phiSlider=document.getElementById("phiSlider");
+const thetaSpan=document.getElementById("theta");
+const phiSpan=document.getElementById("phi");
+const thetaVal=document.getElementById("thetaVal");
+const phiVal=document.getElementById("phiVal");
+
+function updateFromSliders(){
+  const t=thetaSlider.value*Math.PI/180;
+  const p=phiSlider.value*Math.PI/180;
+  thetaVal.textContent=thetaSlider.value;
+  phiVal.textContent=phiSlider.value;
+  blochVector.set(Math.sin(t)*Math.cos(p),Math.sin(t)*Math.sin(p),Math.cos(t));
+  updateStateVectorVisual();
+}
+thetaSlider.oninput=updateFromSliders;
+phiSlider.oninput=updateFromSliders;
+
+/* ================= Mouse View Rotation ================= */
+let drag=false,px=0,py=0;
+renderer.domElement.onmousedown=e=>{drag=true;px=e.clientX;py=e.clientY};
+renderer.domElement.onmouseup=()=>drag=false;
+renderer.domElement.onmousemove=e=>{
+  if(!drag)return;
+  scene.rotation.y+=(e.clientX-px)*0.004;
+  scene.rotation.x+=(e.clientY-py)*0.004;
+  px=e.clientX;py=e.clientY;
+};
+
+/* ================= Init ================= */
+updateFromSliders();
+
+/* ================= Render ================= */
+function animate(){
+  requestAnimationFrame(animate);
+
+  if (animating) {
+  const step = Math.sign(animRemaining) *
+               Math.min(Math.abs(animRemaining), ANIM_STEP);
+
+  blochVector.applyAxisAngle(animAxis, step);
+  blochVector.normalize();
+  updateStateVectorVisual();
+
+  // ================= STEP 4: TRAJECTORY TRACE =================
+  trajectoryPoints.push(blochVector.clone());
+
+  if (trajectoryPoints.length > 1) {
+    if (trajectoryLine) scene.remove(trajectoryLine);
+
+    trajectoryLine = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints(trajectoryPoints),
+      new THREE.LineBasicMaterial({ color: 0x9c27ff })
+    );
+    scene.add(trajectoryLine);
+  }
+  // ============================================================
+
+  animRemaining -= step;
+
+  if (Math.abs(animRemaining) < 1e-6) {
+    animating = false;
+  }
+}
+
+
+  updateAngles();
+  updateQubitEquation();
+  updateBlochCoordinates();
+  updateMeasurementProbabilities();
+
+  renderer.render(scene, camera);
+}
+
+
+
+
+animate();
+</script>
+
+
+</body>
+</html>
